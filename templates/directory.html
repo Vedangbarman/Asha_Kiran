@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Disorders Directory - Asha Kiran</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #A2B9D1; /* Soft, Desaturated Blue */
+            --primary-dark: #8E9EAE;
+            --secondary: #B2D8B2; /* Gentle Mint Green */
+            --accent: #D6CADD; /* Soothing Lavender */
+            --darker-bg: #F4F1E9; /* Main Background - Parchment */
+            --text-primary: #3C3633; /* Soft Black */
+            --text-secondary: #746C65; /* Warm Grey */
+            --navbar-bg: rgba(244, 241, 233, 0.7);
+        }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        body { font-family: 'Space Grotesk', sans-serif; background-color: var(--darker-bg); color: var(--text-primary); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, var(--primary), var(--secondary)); border-radius: 4px; }
+
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            transition: width 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 80%; }
+        
+        #mobile-menu-button.active #line1 { transform: rotate(45deg) translate(4px, 4px); }
+        #mobile-menu-button.active #line2 { opacity: 0; }
+        #mobile-menu-button.active #line3 { transform: rotate(-45deg) translate(4px, -4px); }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0, 1, 0, 1), padding 0.3s ease;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+            transition: max-height 1s cubic-bezier(1, 0, 1, 0), padding 0.3s ease;
+            padding-top: 1rem;
+            padding-bottom: 1.5rem;
+        }
+        .accordion-button svg {
+            transition: transform 0.3s ease;
+        }
+        .accordion-button.open svg {
+            transform: rotate(180deg);
+        }
+        .alphabet-filter a.active {
+            color: var(--primary-dark);
+            font-weight: 700;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-20 left-10 w-96 h-96 bg-[var(--primary)]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-80 h-80 bg-[var(--accent)]/10 rounded-full blur-3xl"></div>
+    </div>
+    
+    <nav id="navbar" class="sticky top-0 bg-[var(--navbar-bg)] backdrop-blur-lg border-b border-gray-300/80 z-50">
+    <div class="container mx-auto px-6 py-3">
+        <div class="flex items-center justify-between">
+            <a href="{{ url_for('home') }}" class="flex items-center">
+                <div class="relative mr-2">
+                    <div class="absolute inset-0 bg-[var(--secondary)]/30 rounded-md blur-sm"></div>
+                    <div class="w-10 h-10 rounded-md bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] border border-blue-200/30 flex items-center justify-center relative shadow-lg shadow-blue-800/10">
+                        <div class="absolute inset-[3px] bg-gray-50 rounded-[4px] flex items-center justify-center overflow-hidden">
+                            <div class="font-bold text-lg bg-gradient-to-r from-[var(--primary-dark)] to-[var(--secondary)] bg-clip-text text-transparent">AK</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-xl font-medium bg-gradient-to-r from-[var(--primary-dark)] to-[var(--accent)] bg-clip-text text-transparent flex items-center">Asha Kiran</div>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-1">
+                <a href="{{ url_for('home') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Home</a>
+                <a href="{{ url_for('mental_ai') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Mental Health AI</a>
+                <a href="{{ url_for('toolkit') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Toolkit</a>
+                <a href="{{ url_for('directory') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Directory</a>
+                <a href="{{ url_for('help_finder') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Find Help</a>
+                <a href="{{ url_for('contact') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Contact</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <div class="flex md:hidden">
+                <button id="mobile-menu-button" class="relative w-10 h-10 focus:outline-none" aria-label="Toggle menu">
+                    <div class="w-5 h-5 flex flex-col justify-between items-center transform transition-all duration-300">
+                        <span id="line1" class="block h-0.5 w-5 bg-[var(--primary-dark)] transition duration-300"></span>
+                        <span id="line2" class="block h-0.5 w-5 bg-[var(--primary-dark)] transition duration-300"></span>
+                        <span id="line3" class="block h-0.5 w-5 bg-[var(--primary-dark)] transition duration-300"></span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden h-0 overflow-hidden transition-all duration-300">
+            <div class="pt-2 pb-3 px-2 space-y-1">
+                <a href="{{ url_for('home') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Home</a>
+                <a href="{{ url_for('mental_ai') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Mental Health AI</a>
+                <a href="{{ url_for('toolkit') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Toolkit</a>
+                <a href="{{ url_for('directory') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Directory</a>
+                <a href="{{ url_for('help_finder') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Find Help</a>
+                <a href="{{ url_for('contact') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Contact</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+        <div id="mobile-menu" class="md:hidden h-0 overflow-hidden transition-all duration-300">
+            <div class="pt-2 pb-3 px-2 space-y-1">
+                <a href="{{ url_for('home') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Home</a>
+                <a href="{{ url_for('mental_ai') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Mental Health AI</a>
+                <a href="{{ url_for('toolkit') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Toolkit</a>
+                <a href="{{ url_for('directory') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Directory</a>
+                <a href="{{ url_for('find_help') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Find Help</a>
+                <a href="{{ url_for('contact') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Contact</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+    <main class="flex-grow container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[var(--primary-dark)] to-[var(--secondary)] bg-clip-text text-transparent mb-4">Mental Disorders Directory</h1>
+            <p class="text-lg text-[var(--text-secondary)] max-w-3xl mx-auto">An informational guide to understanding mental health conditions. Select a letter to filter the list.</p>
+        </div>
+
+        <div id="alphabet-filter-container" class="max-w-3xl mx-auto bg-[#E9E3D5]/50 backdrop-blur-lg border border-[var(--primary)]/20 rounded-xl shadow-md p-4 mb-8">
+            <div id="alphabet-filter" class="alphabet-filter flex flex-wrap justify-center gap-x-3 gap-y-2 text-lg font-medium text-[var(--text-secondary)]">
+                </div>
+        </div>
+
+        <div id="disorder-list" class="max-w-3xl mx-auto space-y-4">
+            </div>
+    </main>
+
+    <footer class="bg-[#E9E3D5]/80 backdrop-blur-lg border-t border-gray-300/80 mt-auto">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <div class="text-[var(--text-secondary)] mb-2">This information is for educational purposes only and is not a substitute for professional diagnosis or treatment.</div>
+            <div class="text-gray-500 text-sm">© 2025 Asha Kiran. All rights reserved.</div>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // CORRECTED: Added Mobile Menu Logic
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if(mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenuButton.classList.toggle('active');
+            if (mobileMenu.style.height && mobileMenu.style.height !== '0px') { mobileMenu.style.height = '0'; } 
+            else { mobileMenu.style.height = `${mobileMenu.scrollHeight}px`; }
+        });
+    }
+
+    // Directory Page Logic
+    const disorderData = `
+Types of Mental Health Disorders / Psychiatric Disorders / Neurological Disorders Starting With A
+Absence seizure: Also called the less common Petit Mal Seizure, these seizures typically cause a short period of “blanking out” or staring into space.
+Abulia: A pathological inability to make decisions or take action.
+Acute Stress Disorder: A psychological condition caused by experiencing or witnessing a terrifying or traumatic event.
+Adjustment Disorders: A maladaptive response to a normal, psychosocial stressor that has occurred in the past three months.
+Agoraphobia: A condition where an individual fears places or situations that might cause panic.
+Alcohol Addiction: A chronic disease characterized by uncontrolled drinking and preoccupation with alcohol.
+Alzheimer’s Disease: A progressive disorder that causes brain cells to waste away and die.
+Amnesia: The loss of memories, such as facts, information and experiences.
+Anorexia Nervosa: An eating disorder characterized by an abnormally low body weight, an intense fear of gaining weight and a distorted perception of weight.
+Antisocial personality disorder: A psychiatric condition in which a person manipulates, exploits or violates the rights of others.
+Anxiety Disorder: A condition in which people experience a constant state of high anxiety.
+Asperger’s Syndrome: (now part of Autism Spectrum Disorder, ASD) Characterized by social impairment and communication difficulties.
+Attention Deficit Disorder (ADD): Challenges paying attention to or concentrating on a given task.
+Attention Deficit Hyperactivity Disorder (ADHD): A neurodevelopmental disorder with types: Inattentive, Hyperactive/Impulsive, and Combination.
+Autism Spectrum Disorder: A pervasive developmental disorder of the brain affecting social interaction and communication.
+Avoidant Personality Disorder: Marked by social inhibition, feelings of inadequacy, and extreme sensitivity to criticism.
+Disorders Starting With B
+Binge Eating Disorder: An illness which resembles bulimia nervosa, but sufferers do not purge their bodies of excess food.
+Bipolar disorder: Also known as Manic Depression, includes Bipolar I and Bipolar II, involving extreme mood swings.
+Body Dysmorphic Disorder: A mental disorder where an individual can’t stop thinking about perceived defects or flaws in their appearance.
+Borderline Personality Disorder: A psychological illness involving unstable moods, behavior, and relationships.
+Bulimia Nervosa: A type of eating disorder where a person frequently eats a large amount of food then tries to prevent weight gain.
+Disorders Starting With C
+Caffeine Addiction: A dependency on caffeine, leading to withdrawal symptoms when consumption is reduced.
+Cannabis Addiction: A problematic pattern of using cannabis, leading to negative effects.
+Catatonic schizophrenia: A subtype of schizophrenia with extreme changes in motor activity.
+Conduct Disorder: A repetitive and persistent pattern of behavior in which the basic rights of others or major age-appropriate societal norms or rules are violated.
+Conversion Disorder: A condition in which you have physical symptoms of a health problem but no injury or illness to explain them.
+Cyclothymia: A rare mood disorder which causes emotional ups and downs that are not as extreme as those in bipolar disorder.
+Disorders Starting With D
+Delusional Disorder: A condition associated with one or more non-bizarre delusions of thinking—such as expressing beliefs that occur in real life such as being poisoned, conspired against, or loved at a distance.
+Dementia: A general term for loss of memory, language, problem-solving and other thinking abilities that are severe enough to interfere with daily life.
+Dependent Personality Disorder: Characterized by a pervasive and excessive need to be taken care of, which leads to submissive and clinging behavior and fears of separation.
+Depersonalization disorder: Involves ongoing feelings of detachment from actions, feelings, thoughts and sensations as if they are watching a movie.
+Depression (Major Depressive Disorder): A common and serious medical illness that negatively affects how you feel, the way you think and how you act.
+Dissociative Identity Disorder (Multiple Personality Disorder): Characterized by the presence of two or more distinct or split identities or personality states that continually have power over the person's behavior.
+Dyslexia: A learning disorder that involves difficulty reading due to problems identifying speech sounds and learning how they relate to letters and words.
+Dysthymia (Persistent Depressive Disorder): A continuous long-term (chronic) form of depression.
+Disorders Starting With E
+Eating disorder NOS: An eating disorder that does not meet the criteria for any specific eating disorder.
+Exhibitionistic Disorder: A condition characterized by the urge, fantasy, or behavior of exposing one’s genitals to a stranger.
+Disorders Starting With G
+Gambling Addiction: The uncontrollable urge to continue gambling despite the toll it takes on one’s life.
+Gender Dysphoria: The feeling of discomfort or distress that might occur in people whose gender identity differs from their sex assigned at birth or sex-related physical characteristics.
+Generalized Anxiety Disorder (GAD): Characterized by persistent and excessive worry about a number of different things.
+Disorders Starting With H
+Histrionic Personality Disorder: A personality disorder characterized by a pattern of excessive attention-seeking emotions, usually beginning in early adulthood, including inappropriately seductive behavior and an excessive need for approval.
+Hypochondriasis: Worrying excessively that you are or may become seriously ill.
+Hypomania: A milder form of mania with elevated mood, increased energy, and enhanced activity levels.
+Disorders Starting With I
+Impulse control disorder: A class of psychiatric disorders characterized by impulsivity – failure to resist a temptation, an urge or an impulse.
+Insomnia: A common sleep disorder that can make it hard to fall asleep, hard to stay asleep, or cause you to wake up too early and not be able to get back to sleep.
+Intermittent Explosive Disorder: An impulse-control disorder characterized by sudden episodes of unwarranted anger.
+Disorders Starting With K
+Kleptomania: The recurrent inability to resist urges to steal items that you generally don't really need.
+Korsakoff’s syndrome: A chronic memory disorder caused by severe deficiency of thiamine (vitamin B-1).
+Disorders Starting With N
+Narcissistic Personality Disorder: A mental condition in which people have an inflated sense of their own importance, a deep need for excessive attention and admiration, troubled relationships, and a lack of empathy for others.
+Narcolepsy: A chronic sleep disorder characterized by overwhelming daytime sleepiness and sudden attacks of sleep.
+Disorders Starting With O
+Obsessive-Compulsive Disorder (OCD): A disorder in which people have recurring, unwanted thoughts, ideas or sensations (obsessions) that make them feel driven to do something repetitively (compulsions).
+Oppositional Defiant Disorder (ODD): A type of behavior disorder, mostly diagnosed in childhood, defined by a pattern of angry/irritable mood, argumentative/defiant behavior, and vindictiveness.
+Disorders Starting With P
+Panic Disorder: An anxiety disorder characterized by unexpected and repeated episodes of intense fear accompanied by physical symptoms.
+Paranoid Personality Disorder: Characterized by paranoia, a relentless mistrust and suspicion of others without adequate reason to be suspicious.
+Parkinson’s Disease: A progressive nervous system disorder that affects movement.
+Phobic disorder (Phobias): An overwhelming and debilitating fear of an object, place, situation, feeling or animal.
+Pica: An eating disorder in which a person repeatedly eats things that are not food with no nutritional value.
+Postpartum Depression: Depression that occurs after childbirth.
+Post Traumatic Stress Disorder (PTSD): A disorder that develops in some people who have experienced a shocking, scary, or dangerous event.
+Pyromania: An impulse control disorder in which individuals repeatedly fail to resist impulses to deliberately start fires.
+Disorders Starting With R
+Reactive Attachment Disorder: A rare but serious condition in which an infant or young child doesn't establish healthy attachments with parents or caregivers.
+REM Sleep Behavior Disorder: A sleep disorder in which you physically act out vivid, often unpleasant dreams with vocal sounds and sudden, often violent arm and leg movements during REM sleep.
+Restless Leg Syndrome: A condition that causes an uncontrollable urge to move your legs, usually because of an uncomfortable sensation.
+Disorders Starting With S
+Schizoaffective Disorder: A chronic mental health condition characterized primarily by symptoms of schizophrenia, such as hallucinations or delusions, and a mood disorder, such as mania and depression.
+Schizoid Personality Disorder: An uncommon condition in which people avoid social activities and consistently shy away from interaction with others.
+Schizophrenia: A serious mental disorder in which people interpret reality abnormally.
+Seasonal Affective Disorder (SAD): A type of depression that's related to changes in seasons.
+Separation Anxiety Disorder: A condition in which a child becomes fearful and nervous when away from home or separated from a loved one.
+Social Anxiety Disorder: A chronic mental health condition in which social interactions cause irrational anxiety.
+Somatization Disorder: A long-term (chronic) condition in which a person has physical symptoms that involve more than one part of the body, but no physical cause can be found.
+Disorders Starting With T
+Tobacco Addiction: Dependence on the drug nicotine.
+Tourette's Syndrome: A nervous system disorder involving repetitive movements or unwanted sounds.
+Trichotillomania: A mental disorder that involves recurrent, irresistible urges to pull out hair from your scalp, eyebrows or other areas of your body.
+    `;
+    const disorders = [];
+    const majorDisorderKeywords = ['depression', 'anxiety', 'bipolar', 'schizophrenia', 'ptsd', 'obsessive-compulsive', 'ocd', 'anorexia', 'bulimia', 'binge eating', 'adhd', 'addiction', 'autism'];
+    const lines = disorderData.trim().split('\n');
+    lines.forEach(line => {
+        if (line.startsWith('Disorders Starting With') || !line.includes(':')) return;
+        const parts = line.split(':');
+        const name = parts[0].trim();
+        const description = parts.slice(1).join(':').trim();
+        const isMajor = majorDisorderKeywords.some(keyword => name.toLowerCase().includes(keyword));
+        disorders.push({ name, description, isMajor });
+    });
+    const disorderListContainer = document.getElementById('disorder-list');
+    const alphabetFilterContainer = document.getElementById('alphabet-filter');
+    let activeCharts = {};
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+    let availableLetters = [];
+    alphabet.forEach(letter => {
+        if (disorders.some(d => d.name.toUpperCase().startsWith(letter))) {
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = letter;
+            link.className = 'filter-letter px-1 hover:text-[var(--primary-dark)]';
+            link.dataset.letter = letter;
+            alphabetFilterContainer.appendChild(link);
+            availableLetters.push(letter);
+        }
+    });
+    function renderDisorders(filterLetter = null) {
+        disorderListContainer.innerHTML = '';
+        activeCharts = {};
+        const filteredDisorders = filterLetter 
+            ? disorders.filter(d => d.name.toUpperCase().startsWith(filterLetter))
+            : disorders;
+        if(filteredDisorders.length === 0 && filterLetter) {
+            disorderListContainer.innerHTML = `<p class="text-center text-[var(--text-secondary)]">No disorders starting with the letter ${filterLetter} were found in our directory.</p>`;
+            return;
+        }
+        filteredDisorders.forEach((disorder, index) => {
+            const accordionItem = document.createElement('div');
+            accordionItem.className = 'disorder-item bg-[var(--darker-bg)]/70 backdrop-blur-lg border border-[var(--primary)]/20 rounded-xl shadow-md overflow-hidden';
+            const chartId = `chart-${filterLetter || 'all'}-${index}`;
+            const chartHTML = disorder.isMajor ? `
+                <div class="bg-[var(--primary)]/20 p-3 rounded-lg mt-4">
+                    <h4 class="font-semibold text-center text-[var(--primary-dark)] text-sm mb-2">Reported Cases Over Time (Illustrative)</h4>
+                    <canvas id="${chartId}" height="150"></canvas>
+                </div>` : '';
+            accordionItem.innerHTML = `
+                <button class="accordion-button w-full flex justify-between items-center text-left p-5 focus:outline-none">
+                    <span class="text-lg font-semibold text-[var(--text-primary)]">${disorder.name}</span>
+                    <svg class="w-6 h-6 text-[var(--primary-dark)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content px-5">
+                    <p class="text-[var(--text-secondary)]">${disorder.description}</p>
+                    ${chartHTML}
+                </div>
+            `;
+            disorderListContainer.appendChild(accordionItem);
+        });
+    }
+    alphabetFilterContainer.addEventListener('click', e => {
+        e.preventDefault();
+        if (e.target.classList.contains('filter-letter')) {
+            const letter = e.target.dataset.letter;
+            document.querySelectorAll('.filter-letter').forEach(l => l.classList.remove('active'));
+            e.target.classList.add('active');
+            renderDisorders(letter);
+        }
+    });
+    disorderListContainer.addEventListener('click', (e) => {
+        const button = e.target.closest('.accordion-button');
+        if (button) {
+            const content = button.nextElementSibling;
+            const isOpen = button.classList.toggle('open');
+            content.classList.toggle('open');
+            const canvas = content.querySelector('canvas');
+            if (!canvas) return;
+            const chartId = canvas.id;
+            if (isOpen && !activeCharts[chartId]) {
+                const randomData = Array.from({length: 5}, () => Math.floor(Math.random() * 80) + 10);
+                activeCharts[chartId] = new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['2020', '2021', '2022', '2023', '2024'],
+                        datasets: [{
+                            label: 'Illustrative Trend',
+                            data: randomData,
+                            borderColor: 'rgba(142, 158, 174, 1)',
+                            backgroundColor: 'rgba(162, 185, 209, 0.2)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, display: false }, x: { grid: { display: false } } }
+                    }
+                });
+            } else if (!isOpen && activeCharts[chartId]) {
+                activeCharts[chartId].destroy();
+                delete activeCharts[chartId];
+            }
+        }
+    });
+    renderDisorders(availableLetters[0]);
+    document.querySelector('.filter-letter').classList.add('active');
+});
+</script>
+</body>
+</html>
