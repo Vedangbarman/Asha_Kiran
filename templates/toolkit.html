@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Well-Being Toolkit - Asha Kiran</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --primary: #A2B9D1; /* Soft, Desaturated Blue */
+            --primary-dark: #8E9EAE;
+            --secondary: #B2D8B2; /* Gentle Mint Green */
+            --accent: #D6CADD; /* Soothing Lavender */
+            --darker-bg: #F4F1E9; /* Main Background - Parchment */
+            --text-primary: #3C3633; /* Soft Black */
+            --text-secondary: #746C65; /* Warm Grey */
+            --navbar-bg: rgba(244, 241, 233, 0.7);
+        }
+
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        body { font-family: 'Space Grotesk', sans-serif; background-color: var(--darker-bg); color: var(--text-primary); }
+
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: linear-gradient(to right, var(--secondary), var(--primary)); transition: width 0.3s ease; transform: translateX(-50%); }
+        .nav-link:hover::after, .nav-link.active::after { width: 80%; }
+        
+        #mobile-menu-button.active #line1 { transform: rotate(45deg) translate(4px, 4px); }
+        #mobile-menu-button.active #line2 { opacity: 0; }
+        #mobile-menu-button.active #line3 { transform: rotate(-45deg) translate(4px, -4px); }
+        
+        .breathing-circle {
+            transition: transform 4s ease-in-out, background-color 2s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(162, 185, 209, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(162, 185, 209, 0); }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 4s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-20 left-10 w-96 h-96 bg-[var(--primary)]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-80 h-80 bg-[var(--accent)]/10 rounded-full blur-3xl"></div>
+    </div>
+    
+    <!-- MASTER NAVIGATION BAR -->
+    <nav id="navbar" class="sticky top-0 bg-[var(--navbar-bg)] backdrop-blur-lg border-b border-gray-300/80 z-50">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <a href="{{ url_for('home') }}" class="flex items-center">
+                    <div class="relative mr-2">
+                        <div class="absolute inset-0 bg-[var(--secondary)]/30 rounded-md blur-sm"></div>
+                        <div class="w-10 h-10 rounded-md bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] border border-blue-200/30 flex items-center justify-center relative shadow-lg shadow-blue-800/10">
+                            <div class="absolute inset-[3px] bg-gray-50 rounded-[4px] flex items-center justify-center overflow-hidden">
+                                <div class="font-bold text-lg bg-gradient-to-r from-[var(--primary-dark)] to-[var(--secondary)] bg-clip-text text-transparent">AK</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xl font-medium bg-gradient-to-r from-[var(--primary-dark)] to-[var(--accent)] bg-clip-text text-transparent flex items-center">Asha Kiran</div>
+                </a>
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="{{ url_for('home') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Home</a>
+                    <a href="{{ url_for('mental_ai') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Mental Health AI</a>
+                    <a href="{{ url_for('toolkit') }}" class="nav-link active text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Toolkit</a>
+                    <a href="{{ url_for('directory') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Directory</a>
+                    <a href="{{ url_for('help_finder') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Find Help</a>
+                    <a href="{{ url_for('contact') }}" class="nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-4 py-2">Contact</a>
+                </div>
+                <div class="flex md:hidden">
+                    <button id="mobile-menu-button" class="relative w-10 h-10 focus:outline-none" aria-label="Toggle menu">
+                        <div class="w-5 h-5 flex flex-col justify-between items-center transform transition-all duration-300">
+                            <span id="line1" class="block h-0.5 w-5 bg-[var(--primary-dark)] transition duration-300"></span>
+                            <span id="line2" class="block h-0.5 w-5 bg-[var(--primary-dark)] transition duration-300"></span>
+                            <span id="line3" class="block h-0.5 w-5 bg-[var(--primary-dark)] transition duration-300"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="md:hidden h-0 overflow-hidden transition-all duration-300">
+                <div class="pt-2 pb-3 px-2 space-y-1">
+                    <a href="{{ url_for('home') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Home</a>
+                    <a href="{{ url_for('mental_ai') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Mental Health AI</a>
+                    <a href="{{ url_for('toolkit') }}" class="block nav-link active text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Toolkit</a>
+                    <a href="{{ url_for('directory') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Directory</a>
+                    <a href="{{ url_for('help_finder') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Find Help</a>
+                    <a href="{{ url_for('contact') }}" class="block nav-link text-[var(--text-secondary)] hover:text-[var(--primary-dark)] px-3 py-2 rounded-md">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <main class="flex-grow container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[var(--primary-dark)] to-[var(--secondary)] bg-clip-text text-transparent mb-4">Well-Being Toolkit</h1>
+            <p class="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">Simple, practical tools to help you find calm and clarity in your day.</p>
+        </div>
+
+        <div class="max-w-xl mx-auto bg-[#E9E3D5]/50 backdrop-blur-lg border border-[var(--primary)]/20 rounded-xl shadow-xl p-8 text-center">
+            <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-4">Guided Breathing Exercise</h2>
+            <p class="text-[var(--text-secondary)] mb-8">Follow the circle and text prompts to regulate your breath and calm your nervous system. This is known as Box Breathing.</p>
+            
+            <div id="breathing-app" class="relative w-48 h-48 md:w-64 md:h-64 mx-auto mb-8 flex items-center justify-center">
+                <div id="breathing-circle" class="breathing-circle w-full h-full rounded-full bg-[var(--primary)]"></div>
+                <p id="breathing-text" class="absolute text-xl md:text-2xl font-medium text-white transition-opacity duration-500"></p>
+            </div>
+            
+            <button id="start-breath-btn" class="px-8 py-3 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-medium rounded-lg shadow-md hover:opacity-90 transition-opacity">
+                Begin
+            </button>
+        </div>
+
+        <div class="mt-16 text-center">
+            <h3 class="text-2xl font-bold text-[var(--text-primary)]">More Tools Coming Soon</h3>
+            <p class="text-[var(--text-secondary)] mt-2">We're working on a Gratitude Journal and a Mindfulness Timer.</p>
+        </div>
+    </main>
+
+    <footer class="bg-[#E9E3D5]/80 backdrop-blur-lg border-t border-gray-300/80 mt-auto">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <div class="text-[var(--text-secondary)] mb-2">These tools are for educational and relaxation purposes only and are not a substitute for professional medical advice.</div>
+            <div class="text-gray-500 text-sm">© 2025 Asha Kiran. All rights reserved.</div>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if(mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenuButton.classList.toggle('active');
+            if (mobileMenu.style.height && mobileMenu.style.height !== '0px') { mobileMenu.style.height = '0'; } 
+            else { mobileMenu.style.height = `${mobileMenu.scrollHeight}px`; }
+        });
+    }
+
+    const startBtn = document.getElementById('start-breath-btn');
+    const circle = document.getElementById('breathing-circle');
+    const text = document.getElementById('breathing-text');
+    let isRunning = false;
+
+    const breathCycle = [
+        { instruction: 'Breathe In...', duration: 4000, scale: 'scale-150', color: 'var(--secondary)' },
+        { instruction: 'Hold', duration: 4000, scale: 'scale-150', color: 'var(--secondary)' },
+        { instruction: 'Breathe Out...', duration: 4000, scale: 'scale-100', color: 'var(--primary)' },
+        { instruction: 'Hold', duration: 4000, scale: 'scale-100', color: 'var(--primary)' }
+    ];
+
+    let cycleIndex = 0;
+
+    function runCycle() {
+        if (!isRunning) return;
+
+        const currentStep = breathCycle[cycleIndex];
+        
+        text.style.opacity = '1';
+        text.textContent = currentStep.instruction;
+        circle.style.transform = currentStep.scale;
+        circle.style.backgroundColor = currentStep.color;
+
+        if (cycleIndex === 0) { 
+            circle.classList.add('animate-pulse-slow');
+        } else {
+            circle.classList.remove('animate-pulse-slow');
+        }
+
+        cycleIndex = (cycleIndex + 1) % breathCycle.length;
+
+        setTimeout(runCycle, currentStep.duration);
+    }
+
+    startBtn.addEventListener('click', () => {
+        if (isRunning) {
+            isRunning = false;
+            startBtn.textContent = 'Begin';
+            text.style.opacity = '0';
+            circle.classList.remove('animate-pulse-slow');
+        } else {
+            isRunning = true;
+            startBtn.textContent = 'Stop';
+            cycleIndex = 0;
+            runCycle();
+        }
+    });
+});
+</script>
+</body>
+</html>
+

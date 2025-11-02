@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In - Asha Kiran</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --primary: #A2B9D1; --primary-dark: #8E9EAE; --secondary: #B2D8B2;
+            --accent: #D6CADD; --darker-bg: #F4F1E9; --text-primary: #3C3333;
+            --text-secondary: #746C65; --navbar-bg: rgba(244, 241, 233, 0.7);
+        }
+        body { font-family: 'Space Grotesk', sans-serif; background-color: var(--darker-bg); color: var(--text-primary); }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-20 left-10 w-96 h-96 bg-[var(--primary)]/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-80 h-80 bg-[var(--accent)]/10 rounded-full blur-3xl"></div>
+    </div>
+    
+    <!-- NAVBAR -->
+    <nav id="navbar" class="sticky top-0 bg-[var(--navbar-bg)] backdrop-blur-lg border-b border-gray-300/80 z-50">
+        <div class="container mx-auto px-6 py-3">
+             <div class="flex items-center justify-between">
+                <a href="main.home" class="flex items-center"><div class="relative mr-2"><div class="absolute inset-0 bg-[var(--secondary)]/30 rounded-md blur-sm"></div><div class="w-10 h-10 rounded-md bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center relative shadow-lg"><div class="absolute inset-[3px] bg-gray-50 rounded-[4px] flex items-center justify-center"><div class="font-bold text-lg bg-gradient-to-r from-[var(--primary-dark)] to-[var(--secondary)] bg-clip-text text-transparent">AK</div></div></div></div><div class="text-xl font-medium bg-gradient-to-r from-[var(--primary-dark)] to-[var(--accent)] bg-clip-text text-transparent">Asha Kiran</div></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <main class="flex-grow flex items-center justify-center px-4 py-12">
+        <div class="w-full max-w-md">
+            <div class="bg-[#E9E3D5]/50 backdrop-blur-lg border border-[var(--primary)]/20 rounded-xl shadow-xl p-8 text-center">
+                <h1 class="text-3xl font-bold text-[var(--text-primary)] mb-2">Welcome Back</h1>
+                <p class="text-[var(--text-secondary)] mb-8">Log in to access your personal sanctuary.</p>
+
+                <!-- Error Message Container -->
+                <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-left" role="alert">
+                    <span class="block sm:inline"></span>
+                </div>
+
+                <form id="login-form">
+                    <div class="space-y-4 text-left">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Email</label>
+                            <input type="email" id="email" name="email" required class="w-full bg-gray-200/50 border border-gray-300/80 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                        </div>
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Password</label>
+                            <input type="password" id="password" name="password" required class="w-full bg-gray-200/50 border border-gray-300/80 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full mt-8 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-bold py-3 rounded-lg text-lg hover:opacity-90 transition-opacity">
+                        Log In
+                    </button>
+                </form>
+
+                <p class="text-sm text-[var(--text-secondary)] mt-8">
+                    Don't have an account? <a href="register.html" class="font-semibold text-[var(--primary-dark)] hover:underline">Register here</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-[#E9E3D5]/80 backdrop-blur-lg border-t border-gray-300/80 mt-auto">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <div class="text-gray-500 text-sm">© 2025 Asha Kiran. All rights reserved.</div>
+        </div>
+    </footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // IMPORTANT: Firebase config object.
+    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    // Redirect if already logged in
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            window.location.href = 'mental_ai.html';
+        }
+    });
+
+    const loginForm = document.getElementById('login-form');
+    const errorMessageContainer = document.getElementById('error-message');
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+        
+        errorMessageContainer.classList.add('hidden');
+
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in successfully
+                window.location.href = 'mental_ai.html';
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                let message = "An unknown error occurred. Please try again.";
+                
+                if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-credential') {
+                    message = 'Invalid email or password. Please check your credentials and try again.';
+                } else if (errorCode === 'auth/invalid-email') {
+                    message = 'Please enter a valid email address.';
+                }
+                
+                errorMessageContainer.querySelector('span').textContent = message;
+                errorMessageContainer.classList.remove('hidden');
+            });
+    });
+</script>
+
+</body>
+</html>
